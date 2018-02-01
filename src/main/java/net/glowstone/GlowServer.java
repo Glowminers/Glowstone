@@ -618,6 +618,16 @@ public final class GlowServer implements Server {
      * Starts the server starting sequence (starting, binding to port, etc.)
      */
     public void run() {
+        logger.info(
+            "\n"
+            + "┌─About─────────────────────────────────────────────────────────────────┐\n"
+            + "│Florida Institute of Technology - CSE2410 Intro to Software Engineering│\n"
+            + "│Group Glowminers                                                       │\n"
+            + "│Shane McConkey, Jordan Murray, Justin Tomlin, Zhen Xu                  │\n"
+            + "│Dr. Keith Gallagher, Isabella DeMeo                                    │\n"
+            + "│https://github.com/Glowminers/Glowstone                                │\n"
+            + "└───────────────────────────────────────────────────────────────────────┘"
+        );
         start();
         bind();
         logger.info("Ready for connections.");
