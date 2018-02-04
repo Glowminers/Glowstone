@@ -1,5 +1,5 @@
 
-<img align="right" alt="Glowminers logo" width="100" src="etc/logo/logo.png">
+<img align="right" alt="Glowminers logo" width="100" src="../etc/logo/logo.png">
 
 # Glowstone
 * Florida Institure of Technology
