@@ -17,15 +17,19 @@
 * Isabella DeMeo
 
 ## K/D/A (Kill/Death/Assist)
-| Name | Kills | Deaths | Assists | First Blood | Double Kill | Triple Kill | Quadra Kill | PENTA KILL |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Jordan Murray | 0 | 0 | 0 | F | 0 | 0 | 0 | 0 |
-| Justin Tomlin | 0 | 0 | 0 | F | 0 | 0 | 0 | 0 |
-| Shane McConkey | 0 | 0 | 0 | F | 0 | 0 | 0 | 0 |
-| Zhen Xu | 5 | 0 | 1 | T | 2 | 0 | 0 | 0 |
+| Name           | Kills | Deaths | Assists | First Blood | Double Kill | Triple Kill | Quadra Kill | PENTA KILL |
+| ---            | ---   | ---    | ---     | ---         | ---         | ---         | ---         | ---        |
+| Jordan Murray  | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
+| Justin Tomlin  | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
+| Shane McConkey | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
+| Zhen Xu        | 7     | 0      | 2       | •           | 2           | 0           | 0           | 0          |
+
 ### Terms
-1. Kill: Submit a pull request and got approved.
-2. Death: Submit a pull request and got rejected.
+1. Kill: Submit a pull request and gets approved.
+2. Death: Submit a pull request and gets rejected.
 3. Assist: Submit an issue or comtribute to other pull requests.
-4. First Blood: Got the first pull request approved in class.
+4. First Blood: Gets the first pull request approved in class.
 5. Double Kill, Triple Kill, Quadra Kill, PENTA KILL: Different amounts of kills achieved in a single day.
+
+## Documents
+[Standard Procedures](https://github.com/Glowminers/Glowstone/blob/FlTech_CSE2410_Spring2018/docs/STANDARD_PROCEDURES.md)
