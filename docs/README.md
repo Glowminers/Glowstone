@@ -20,7 +20,7 @@
 | Name           | Kills | Deaths | Assists | First Blood | Double Kill | Triple Kill | Quadra Kill | PENTA KILL |
 | ---            | ---   | ---    | ---     | ---         | ---         | ---         | ---         | ---        |
 | Jordan Murray  | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
-| Justin Tomlin  | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
+| Justin Tomlin  | 1     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
 | Shane McConkey | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
 | Zhen Xu        | 7     | 0      | 2       | •           | 2           | 0           | 0           | 0          |
 
