@@ -22,7 +22,7 @@
 | Jordan Murray  | 0     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
 | Justin Tomlin  | 1     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
 | Shane McConkey | 1     | 0      | 0       | ◦           | 0           | 0           | 0           | 0          |
-| Zhen Xu        | 7     | 0      | 2       | •           | 2           | 0           | 0           | 0          |
+| Zhen Xu        | 8     | 0      | 2       | •           | 2           | 0           | 0           | 0          |
 
 ### Terms
 1. Kill: Submit a pull request and gets approved.
