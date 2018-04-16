@@ -2,40 +2,41 @@ package net.glowstone.entity;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Answers.RETURNS_SMART_NULLS;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import com.flowpowered.network.Message;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import net.glowstone.EventFactory;
 import net.glowstone.GlowServer;
+import net.glowstone.ServerProvider;
 import net.glowstone.GlowWorld;
+import net.glowstone.block.GlowBlock;
 import net.glowstone.chunk.GlowChunk;
-import net.glowstone.scheduler.GlowScheduler;
-import org.bukkit.Bukkit;
+import net.glowstone.scoreboard.GlowScoreboard;
+import net.glowstone.scoreboard.GlowScoreboardManager;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.PluginManager;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.stubbing.Answer;
 
 /**
  * Superclass for tests of entity classes. Configures necessary mocks for subclasses.
@@ -44,56 +45,110 @@ import org.powermock.modules.junit4.PowerMockRunner;
  *
  * @param <T> the class under test
  */
-@PrepareForTest({GlowWorld.class, GlowServer.class, EventFactory.class})
-@RunWith(PowerMockRunner.class)
 public abstract class GlowEntityTest<T extends GlowEntity> {
 
-    // Mocks
-    protected final GlowWorld world = PowerMockito.mock(GlowWorld.class, Mockito.RETURNS_SMART_NULLS);
-    protected final GlowServer server = PowerMockito.mock(GlowServer.class, Mockito.RETURNS_SMART_NULLS);
+    public static final Answer<Object> RETURN_FIRST_ARG = invocation -> invocation.getArgument(0);
+
+    // Mockito mocks
     @Mock
     protected ItemFactory itemFactory;
-    @Mock(answer = RETURNS_SMART_NULLS)
+    @Mock
     protected GlowChunk chunk;
+    @Mock
+    protected GlowBlock block;
+    @Mock
+    protected GlowWorld world;
+    @Mock(answer = Answers.RETURNS_SMART_NULLS)
+    protected GlowServer server;
+    @Mock
+    protected GlowScoreboardManager scoreboardManager;
+    @Mock
+    protected EventFactory eventFactory;
+    @Mock
+    private PluginManager pluginManager;
 
     // Real objects
-    protected final Logger log = Logger.getLogger(getClass().getSimpleName());
     protected Location location;
-    protected final EntityIdManager idManager = new EntityIdManager();
-    protected final EntityManager entityManager = new EntityManager();
-    protected final Function<Location, ? extends T> entityCreator;
+    protected EntityIdManager idManager;
+    protected EntityManager entityManager;
+    protected GlowScoreboard scoreboard;
+    protected Logger log;
+    protected final Function<? super Location, ? extends T> entityCreator;
+    protected T entity;
+    private EventFactory oldEventFactory;
 
-    protected GlowEntityTest(Function<Location, ? extends T> entityCreator) {
+
+    protected GlowEntityTest(Function<? super Location, ? extends T> entityCreator) {
         this.entityCreator = entityCreator;
     }
 
+    /**
+     * Override this to return false in subclasses that call super.{@link #setUp()}, if the entity
+     * under test should not be created in the super method.
+     *
+     * @return true if GlowEntity's implementation of {@link #setUp()} is to invoke {@link
+     * #entityCreator}; false otherwise.
+     */
+    public boolean createEntityInSuperSetUp() {
+        return true;
+    }
+
+
     @Before
-    public void setUp() throws IOException {
-        when(server.getLogger()).thenReturn(log);
-        if (Bukkit.getServer() == null) {
-            Bukkit.setServer(server);
-        }
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(server.getItemFactory()).thenReturn(itemFactory);
+        when(server.getPluginManager()).thenReturn(pluginManager);
+        ServerProvider.setMockServer(server);
+        log = Logger.getLogger(getClass().getSimpleName());
+        when(server.getLogger()).thenReturn(log);
         location = new Location(world, 0, 0, 0);
         when(world.getServer()).thenReturn(server);
-        when(world.getEntityManager()).thenReturn(entityManager);
+        when(world.getDifficulty()).thenReturn(Difficulty.NORMAL);
+        when(server.getWorlds()).thenReturn(Collections.singletonList(world));
+        when(world.getBlockAt(any(Location.class))).thenReturn(block);
+        when(block.getType()).thenReturn(Material.DIRT);
+        when(block.getRelative(any(BlockFace.class))).thenReturn(block);
         when(world.getChunkAt(any(Location.class))).thenReturn(chunk);
         when(world.getChunkAt(any(Block.class))).thenReturn(chunk);
         when(world.getChunkAt(anyInt(),anyInt())).thenReturn(chunk);
-        when(world.getDifficulty()).thenReturn(Difficulty.NORMAL);
-        when(server.getWorlds()).thenReturn(Collections.singletonList(world));
         when(server.getItemFactory()).thenReturn(itemFactory);
+        entityManager = Mockito.spy(new EntityManager());
+        when(world.getEntityManager()).thenReturn(entityManager);
+        idManager = new EntityIdManager();
         when(server.getEntityIdManager()).thenReturn(idManager);
-        mockStatic(EventFactory.class);
-        when(EventFactory.callEvent(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        // ensureServerConversions returns its argument
+        when(server.getScoreboardManager()).thenReturn(scoreboardManager);
+        scoreboard = new GlowScoreboard();
+        when(scoreboardManager.getMainScoreboard()).thenReturn(scoreboard);
         when(itemFactory.ensureServerConversions(any(ItemStack.class)))
-                .thenAnswer(invocation -> invocation.getArguments()[0]);
+                .thenAnswer(RETURN_FIRST_ARG);
+        oldEventFactory = EventFactory.getInstance();
+        EventFactory.setInstance(eventFactory);
+        if (createEntityInSuperSetUp()) {
+            entity = entityCreator.apply(location);
+        }
+        when(eventFactory.callEvent(any(Event.class))).thenAnswer(RETURN_FIRST_ARG);
+        when(eventFactory.onEntityDamage(any(EntityDamageEvent.class))).thenAnswer(
+                RETURN_FIRST_ARG);
+    }
+
+    @After
+    public void tearDown() {
+        EventFactory.setInstance(oldEventFactory);
+        ServerProvider.setMockServer(null);
+        // https://www.atlassian.com/blog/archives/reducing_junit_memory_usage
+        world = null;
+        server = null;
+        scoreboardManager = null;
+        itemFactory = null;
+        chunk = null;
+        block = null;
+        log = null;
+        entity = null;
     }
 
     @Test
     public void testCreateSpawnMessage() {
-        T entity = entityCreator.apply(location);
         List<Message> messages = entity.createSpawnMessage();
         assertFalse(messages.isEmpty());
         // Should start with an instance of one of the Spawn*Message classes

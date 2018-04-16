@@ -1,6 +1,5 @@
 package net.glowstone.block.itemtype;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -24,10 +23,19 @@ public abstract class ItemTypeTest {
     protected World world;
     protected Location location;
 
+    /**
+     * Override this to work around https://github.com/mockito/mockito/issues/357 by removing
+     * RETURNS_SMART_NULLS.
+     * @return a mock GlowPlayer
+     */
+    protected GlowPlayer mockPlayer() {
+        return Mockito.mock(GlowPlayer.class, RETURNS_SMART_NULLS);
+    }
+
     @BeforeEach
     public void setUp() {
         ServerShim.install();
-        player = Mockito.mock(GlowPlayer.class, RETURNS_SMART_NULLS);
+        player = mockPlayer();
         inventory = new GlowPlayerInventory(player);
         when(player.getInventory()).thenReturn(inventory);
         when(player.getGameMode()).thenReturn(GameMode.SURVIVAL);

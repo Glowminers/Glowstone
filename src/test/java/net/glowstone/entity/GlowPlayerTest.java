@@ -9,11 +9,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.UUID;
-import java.util.function.Supplier;
-import net.glowstone.GlowServer;
-import net.glowstone.GlowWorld;
 import net.glowstone.block.GlowBlock;
 import net.glowstone.chunk.ChunkManager;
 import net.glowstone.chunk.ChunkManager.ChunkLock;
@@ -27,6 +23,7 @@ import net.glowstone.scheduler.GlowScheduler;
 import net.glowstone.scheduler.WorldScheduler;
 import net.glowstone.util.InventoryUtil;
 import net.glowstone.util.bans.UuidListFile;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -34,13 +31,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-@PrepareForTest({GlowServer.class, GlowWorld.class, ChunkManager.class})
-public class GlowPlayerTest extends GlowEntityTest<GlowPlayer> {
+@PrepareForTest({Bukkit.class, ChunkManager.class})
+@RunWith(PowerMockRunner.class)
+public class GlowPlayerTest extends GlowHumanEntityTest<GlowPlayer> {
 
     private final ChunkManager chunkManager
             = PowerMockito.mock(ChunkManager.class, Mockito.RETURNS_MOCKS);
@@ -64,28 +64,33 @@ public class GlowPlayerTest extends GlowEntityTest<GlowPlayer> {
     // Real objects
 
     private static final GlowPlayerProfile profile
-            = new GlowPlayerProfile("TestPlayer", UUID.randomUUID());
+            = new GlowPlayerProfile("TestPlayer", UUID.randomUUID(), true);
     private GlowScheduler scheduler;
     private final SessionRegistry sessionRegistry = new SessionRegistry();
     private File opsListFile;
     private UuidListFile opsList;
-
-    // Finally, the star of the show
-    private GlowPlayer player;
     private ItemStack fishingRodItem;
 
     public GlowPlayerTest() {
         super(ignoredLocation -> new GlowPlayer(session, profile, reader));
     }
 
+    @Override
+    public boolean createEntityInSuperSetUp() {
+        return false;
+    }
+
     @Before
     @Override
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
+        PowerMockito.mockStatic(Bukkit.class);
         super.setUp();
+        when(Bukkit.getServer()).thenReturn(server);
+        when(Bukkit.getItemFactory()).thenReturn(itemFactory);
         opsListFile = File.createTempFile("test-ops-list", "");
         opsList = new UuidListFile(opsListFile);
-        when(server.getPluginManager()).thenReturn(pluginManager);
         when(server.getSessionRegistry()).thenReturn(sessionRegistry);
+        when(server.getPluginManager()).thenReturn(pluginManager);
         scheduler = new GlowScheduler(server, worldScheduler);
         when(session.getServer()).thenReturn(server);
         when(server.getScheduler()).thenReturn(scheduler);
@@ -98,34 +103,34 @@ public class GlowPlayerTest extends GlowEntityTest<GlowPlayer> {
         when(world.newChunkLock(anyString())).thenReturn(chunkLock);
         when(block.getType()).thenReturn(Material.AIR);
         when(block.getRelative(any(BlockFace.class))).thenReturn(block);
-        player = entityCreator.apply(location);
         fishingRodItem = new ItemStack(Material.FISHING_ROD);
-        player.setItemInHand(fishingRodItem);
-        when(session.getPlayer()).thenReturn(player);
+        entity = entityCreator.apply(location);
+        entity.setItemInHand(fishingRodItem);
+        when(session.getPlayer()).thenReturn(entity);
     }
 
     @Test
     public void testFishingContinues() {
-        final GlowFishingHook fishingHook = new GlowFishingHook(location, fishingRodItem, player);
-        player.setCurrentFishingHook(fishingHook);
-        player.pulse();
-        assertSame(fishingHook, player.getCurrentFishingHook());
+        final GlowFishingHook fishingHook = new GlowFishingHook(location, fishingRodItem, entity);
+        entity.setCurrentFishingHook(fishingHook);
+        entity.pulse();
+        assertSame(fishingHook, entity.getCurrentFishingHook());
     }
 
     @Test
     public void testFishingStopsAtDistance() {
-        player.setCurrentFishingHook(new GlowFishingHook(location, fishingRodItem, player));
-        player.teleport(new Location(world, 33, 0, 0));
-        player.endTeleport();
-        player.pulse();
-        assertNull(player.getCurrentFishingHook());
+        entity.setCurrentFishingHook(new GlowFishingHook(location, fishingRodItem, entity));
+        entity.teleport(new Location(world, 33, 0, 0));
+        entity.endTeleport();
+        entity.pulse();
+        assertNull(entity.getCurrentFishingHook());
     }
 
     @Test
     public void testFishingStopsWhenNoPoleHeld() {
-        player.setCurrentFishingHook(new GlowFishingHook(location, fishingRodItem, player));
-        player.setItemInHand(InventoryUtil.createEmptyStack());
-        player.pulse();
-        assertNull(player.getCurrentFishingHook());
+        entity.setCurrentFishingHook(new GlowFishingHook(location, fishingRodItem, entity));
+        entity.setItemInHand(InventoryUtil.createEmptyStack());
+        entity.pulse();
+        assertNull(entity.getCurrentFishingHook());
     }
 }

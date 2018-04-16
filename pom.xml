@@ -6,23 +6,22 @@
   <groupId>net.glowstone</groupId>
   <artifactId>glowstone</artifactId>
   <packaging>jar</packaging>
-  <version>2018.2.0-SNAPSHOT</version>
+  <version>2018.3.0-SNAPSHOT</version>
   <name>Glowstone</name>
   <url>https://www.glowstone.net</url>
   <description>A fast, customizable and compatible open source Minecraft server.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <api.version>1.12.2-R2.0-SNAPSHOT</api.version>
+    <api.version>1.12.2-R2.1-SNAPSHOT</api.version>
     <minecraft.version>1.12.2</minecraft.version>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <kotlin.version>1.2.21</kotlin.version>
     <powermockVersion>2.0.0-beta.5</powermockVersion>
-    <junit.version>4.12</junit.version>
-    <junit.jupiter.version>5.0.3</junit.jupiter.version>
-    <junit.vintage.version>${junit.version}.3</junit.vintage.version>
+    <junit.jupiter.version>5.1.0</junit.jupiter.version>
+    <junit.vintage.version>5.1.0</junit.vintage.version>
   </properties>
 
   <repositories>
@@ -115,21 +114,9 @@
     </dependency>
     <!-- Tests -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <version>${junit.vintage.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -194,7 +181,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
@@ -219,7 +205,6 @@
           <headerLocation>${project.basedir}/LICENSE</headerLocation>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -238,9 +223,11 @@
             <artifactId>java18</artifactId>
             <version>1.0</version>
           </signature>
+          <ignores>
+            <ignore>java.lang.invoke.MethodHandle</ignore>
+          </ignores>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -274,7 +261,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -294,34 +280,10 @@
           </archive>
         </configuration>
       </plugin>
-
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.7.0</version>
-      </plugin>
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-      </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <!-- Upgrade to 2.21.0 when junit-platform-surefire-provider 1.2.0 releases
+         See https://github.com/junit-team/junit5/issues/809 -->
         <version>2.19.1</version>
         <dependencies>
           <dependency>
@@ -349,6 +311,56 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <failIfNoTests>true</failIfNoTests>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+        <version>1.16.20.0</version>
+        <executions>
+          <execution>
+            <id>delombok</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>delombok</goal>
+            </goals>
+            <configuration>
+              <addOutputDirectory>false</addOutputDirectory>
+              <sourceDirectory>src/main/java</sourceDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.7.0</version>
+      </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.0.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <defaultVersion>${project.version}</defaultVersion>
+          <sourcepath>target/generated-sources/delombok</sourcepath>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.0.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
       </plugin>
     </plugins>
   </build>

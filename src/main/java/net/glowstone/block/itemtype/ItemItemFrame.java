@@ -1,14 +1,11 @@
 package net.glowstone.block.itemtype;
 
 import com.flowpowered.network.Message;
-
 import java.util.List;
-
 import net.glowstone.EventFactory;
 import net.glowstone.block.GlowBlock;
 import net.glowstone.entity.GlowPlayer;
 import net.glowstone.entity.objects.GlowItemFrame;
-
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -23,7 +20,8 @@ public class ItemItemFrame extends ItemType {
         GlowItemFrame entity = new GlowItemFrame(player, target.getRelative(face).getLocation(),
             face);
 
-        if (EventFactory.callEvent(new HangingPlaceEvent(entity, player, target, face))
+        if (EventFactory.getInstance()
+                .callEvent(new HangingPlaceEvent(entity, player, target, face))
             .isCancelled()) {
             return;
         }

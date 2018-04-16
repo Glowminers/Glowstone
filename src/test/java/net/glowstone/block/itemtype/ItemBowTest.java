@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import net.glowstone.entity.GlowPlayer;
 import net.glowstone.entity.projectile.GlowArrow;
 import net.glowstone.entity.projectile.GlowSpectralArrow;
 import net.glowstone.entity.projectile.GlowTippedArrow;
@@ -39,13 +40,20 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class ItemBowTest extends ItemTypeTest {
+    public static final Vector POSITIVE_X_DIRECTION = new Vector(1, 0, 0);
+    private ItemBow bow;
+    private ItemStack bowItemStack;
+    private GlowArrow launchedArrow;
+    private GlowSpectralArrow launchedSpectralArrow;
+    private GlowTippedArrow launchedTippedArrow;
+
     @Override
     @BeforeEach
     public void setUp() {
         super.setUp();
         bowItemStack = new ItemStack(Material.BOW);
         inventory.setItemInMainHand(bowItemStack);
-        Mockito.doCallRealMethod().when(player).setItemInHand(any(ItemStack.class));
+        doCallRealMethod().when(player).setItemInHand(any(ItemStack.class));
         bow = new ItemBow();
         launchedArrow = mock(GlowArrow.class, RETURNS_SMART_NULLS);
         launchedSpectralArrow = mock(GlowSpectralArrow.class, RETURNS_SMART_NULLS);
@@ -53,20 +61,22 @@ public class ItemBowTest extends ItemTypeTest {
         for (Arrow arrow : new Arrow[]{launchedArrow, launchedSpectralArrow, launchedTippedArrow}) {
             Arrow.Spigot spigot = mock(Arrow.Spigot.class, RETURNS_SMART_NULLS);
             when(arrow.getLocation()).thenReturn(location);
-            when(arrow.getVelocity()).thenReturn(new Vector(2, 0, 0));
+            when(arrow.getVelocity()).thenReturn(POSITIVE_X_DIRECTION);
             when(arrow.spigot()).thenReturn(spigot);
         }
+        when(player.getEyeLocation()).thenReturn(
+                location.clone().setDirection(POSITIVE_X_DIRECTION));
         doCallRealMethod().when(launchedTippedArrow).copyFrom(any(PotionMeta.class));
         when(player.launchProjectile(Arrow.class)).thenReturn(launchedArrow);
         when(player.launchProjectile(SpectralArrow.class)).thenReturn(launchedSpectralArrow);
         when(player.launchProjectile(TippedArrow.class)).thenReturn(launchedTippedArrow);
     }
 
-    private ItemBow bow;
-    private ItemStack bowItemStack;
-    private GlowArrow launchedArrow;
-    private GlowSpectralArrow launchedSpectralArrow;
-    private GlowTippedArrow launchedTippedArrow;
+    @Override
+    protected GlowPlayer mockPlayer() {
+        // https://github.com/mockito/mockito/issues/357
+        return Mockito.mock(GlowPlayer.class);
+    }
 
     private void scanInventory(boolean expectBow, int expectedBowDamage, int expectedArrows) {
         boolean foundBow = false;

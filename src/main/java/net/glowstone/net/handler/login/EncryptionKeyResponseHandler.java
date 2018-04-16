@@ -163,7 +163,7 @@ public final class EncryptionKeyResponseHandler implements
                 properties.add(new ProfileProperty(propName, value, signature));
             }
 
-            AsyncPlayerPreLoginEvent event = EventFactory
+            AsyncPlayerPreLoginEvent event = EventFactory.getInstance()
                 .onPlayerPreLogin(name, session.getAddress(), uuid);
             if (event.getLoginResult() != Result.ALLOWED) {
                 session.disconnect(event.getKickMessage(), true);
@@ -172,7 +172,7 @@ public final class EncryptionKeyResponseHandler implements
 
             // spawn player
             session.getServer().getScheduler().runTask(null, () -> session.setPlayer(
-                    new GlowPlayerProfile(name, uuid, properties)));
+                    new GlowPlayerProfile(name, uuid, properties, true)));
         }
 
         @Override

@@ -36,10 +36,19 @@ public class GlowTntPrimed extends GlowExplosive implements TNTPrimed {
     }
 
     /**
+     * Creates a primed TNT block, not associated with any igniting entity.
+     *
+     * @param location the location
+     */
+    public GlowTntPrimed(Location location) {
+        this(location, null);
+    }
+
+    /**
      * Creates a primed TNT block.
      *
      * @param location the location
-     * @param source the entity that ignited this
+     * @param source the entity that ignited this; may be null
      */
     public GlowTntPrimed(Location location, Entity source) {
         super(location, Explosion.POWER_TNT);
@@ -89,7 +98,8 @@ public class GlowTntPrimed extends GlowExplosive implements TNTPrimed {
     }
 
     private void explode() {
-        ExplosionPrimeEvent event = EventFactory.callEvent(new ExplosionPrimeEvent(this));
+        ExplosionPrimeEvent event = EventFactory.getInstance()
+                .callEvent(new ExplosionPrimeEvent(this));
 
         if (!event.isCancelled()) {
             Location location = getLocation();

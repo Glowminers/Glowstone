@@ -72,14 +72,14 @@ public final class AnvilChunkIoService implements ChunkIoService {
         ChunkSection[] sections = new ChunkSection[GlowChunk.SEC_COUNT];
         for (CompoundTag sectionTag : sectionList) {
             int y = sectionTag.getByte("Y");
+            if (y < 0 || y > GlowChunk.SEC_COUNT) {
+                GlowServer.logger.log(Level.WARNING,
+                        "Out of bounds chunk section at y " + y + " in " + chunk + "!");
+                continue;
+            }
             if (sections[y] != null) {
                 GlowServer.logger
                     .log(Level.WARNING, "Multiple chunk sections at y " + y + " in " + chunk + "!");
-                continue;
-            }
-            if (y < 0 || y > GlowChunk.SEC_COUNT) {
-                GlowServer.logger.log(Level.WARNING,
-                    "Out of bounds chunk section at y " + y + " in " + chunk + "!");
                 continue;
             }
             sections[y] = ChunkSection.fromNbt(sectionTag);
@@ -98,6 +98,11 @@ public final class AnvilChunkIoService implements ChunkIoService {
             chunk.setHeightMap(levelTag.getIntArray("HeightMap"));
         } else {
             chunk.automaticHeightMap();
+        }
+
+        // read slime chunk
+        if (levelTag.isByte("isSlimeChunk")) {
+            chunk.setIsSlimeChunk(levelTag.getByte("isSlimeChunk"));
         }
 
         // read entities
@@ -213,6 +218,9 @@ public final class AnvilChunkIoService implements ChunkIoService {
         // height map and biomes
         levelTags.putIntArray("HeightMap", snapshot.getRawHeightmap());
         levelTags.putByteArray("Biomes", snapshot.getRawBiomes());
+
+        // Save Slime Chunk
+        levelTags.putByte("isSlimeChunk", snapshot.isSlimeChunk() ? 1 : 0);
 
         // entities
         List<CompoundTag> entities = new ArrayList<>();
